@@ -6,7 +6,7 @@ import * as vm from "vm";
 const prisma = new PrismaClient();
 
 async function main() {
-  const filePath = path.join(process.cwd(), "../assets/js/events-data.js");
+  const filePath = path.join(process.cwd(), "assets/js/events-data.js");
   console.log(`Reading events data from ${filePath}`);
   let fileContent = fs.readFileSync(filePath, "utf-8");
   
@@ -29,7 +29,6 @@ async function main() {
   for (const event of events) {
     await prisma.event.create({
       data: {
-        id: event.id,
         title: event.title,
         category: event.category,
         categoryLabel: event.categoryLabel,
