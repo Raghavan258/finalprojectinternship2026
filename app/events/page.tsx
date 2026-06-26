@@ -58,7 +58,7 @@ function BrowseEventsContent() {
       result.sort((a, b) => a.daysLeft - b.daysLeft);
     } else {
       // relevance / upcoming (id order)
-      result.sort((a, b) => a.id - b.id);
+      result.sort((a, b) => String(a.id).localeCompare(String(b.id)));
     }
 
     setFilteredEvents(result);
