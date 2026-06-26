@@ -1,0 +1,4 @@
+Registrations ({{ registrations | length }}) for event {{ event_id }}:
+
+{% for r in registrations %}- {{ r.user_name }} ({{ r.user_id }}) — Registered at: {{ r.created_at }} — ID: {{ r.registration_id }}
+{% endfor %}

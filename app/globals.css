@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "./styles/variables.css";
+@import "./styles/reset.css";
+@import "./styles/base.css";
+@import "./styles/layout.css";
+@import "./styles/utilities.css";
+@import "./styles/components.css";
+@import "./styles/chatbot.css";
+@import "./styles/dashboard.css";
+@import "./styles/pages.css";
+
+@import "tailwindcss";
+
+/* Extra layout overrides to make sure body takes full height in Next.js structure */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}

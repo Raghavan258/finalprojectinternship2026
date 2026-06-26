@@ -1,0 +1,171 @@
+/* assets/css/variables.css - Locked Energetic Brand Theme */
+
+
+:root {
+  /* ── BRAND PALETTE — Vibrant Indigo + Coral + Amber ── */
+  --brand-indigo-950: #0F0B2E;
+  --brand-indigo-900: #1A1247;
+  --brand-indigo-800: #271A66;
+  --brand-indigo-700: #362389;
+  --brand-indigo-600: #4F2FB8;
+  --brand-indigo-500: #6C3CE9;   /* primary brand */
+  --brand-indigo-400: #8B5FF0;
+  --brand-indigo-300: #AD8AF5;
+  --brand-indigo-200: #D2BBFA;
+  --brand-indigo-100: #ECE0FD;
+  --brand-indigo-50:  #F7F2FE;
+
+  --brand-coral-700: #C7330F;
+  --brand-coral-600: #E0421A;
+  --brand-coral-500: #FF5C2B;   /* secondary / CTA accent */
+  --brand-coral-400: #FF7E55;
+  --brand-coral-300: #FFA688;
+  --brand-coral-100: #FFE5DA;
+
+  --brand-amber-600: #D97706;
+  --brand-amber-500: #F5A524;   /* highlight / star / prize accent */
+  --brand-amber-400: #FBBF45;
+  --brand-amber-100: #FEF1D9;
+
+  /* ── CATEGORY ACCENTS (Event Types) ── */
+  --cat-hackathon:   #6C3CE9;  --cat-hackathon-bg:  #F7F2FE;
+  --cat-workshop:    #0EA5A4;  --cat-workshop-bg:   #E3FAF9;
+  --cat-jobfair:     #F5A524;  --cat-jobfair-bg:    #FEF1D9;
+  --cat-startup:     #FF5C2B;  --cat-startup-bg:    #FFE5DA;
+  --cat-ngo:         #E1457C;  --cat-ngo-bg:        #FCE4EE;
+  --cat-cultural:    #14B8A6;  --cat-cultural-bg:   #DBFAF6;
+  --cat-healthcare:  #DC2626;  --cat-healthcare-bg: #FEE2E2;
+  --cat-volunteer:   #16A34A;  --cat-volunteer-bg:  #DCFCE7;
+  --cat-scholarship: #2563EB;  --cat-scholarship-bg: #DBEAFE;
+  --cat-mentorship:  #9333EA;  --cat-mentorship-bg:  #F3E8FF;
+
+  /* ── NEUTRALS ── */
+  --n-950: #0B0B12;
+  --n-900: #15151F;
+  --n-800: #1F1F2E;
+  --n-700: #2D2D40;
+  --n-600: #44445C;
+  --n-500: #66667F;
+  --n-400: #8E8EA3;
+  --n-300: #B8B8C9;
+  --n-200: #DCDCE6;
+  --n-100: #EEEEF4;
+  --n-50:  #F7F7FB;
+  --n-0:   #FFFFFF;
+
+  /* ── SEMANTIC STATE ── */
+  --success: #16A34A;  --success-bg: #DCFCE7;
+  --warning: #F5A524;  --warning-bg: #FEF1D9;
+  --error:   #DC2626;  --error-bg:   #FEE2E2;
+  --info:    #2563EB;  --info-bg:    #DBEAFE;
+
+  /* ── TYPOGRAPHY ── */
+  --font-sans:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+  --text-4xl:  2.25rem;   /* 36px */
+  --text-5xl:  3rem;      /* 48px */
+  --text-6xl:  3.75rem;
+  --text-7xl:  4.5rem;
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  /* ── SPACING (4px base) ── */
+  --space-1:  0.25rem;  /* 4px */
+  --space-2:  0.5rem;   /* 8px */
+  --space-3:  0.75rem;  /* 12px */
+  --space-4:  1rem;     /* 16px */
+  --space-5:  1.25rem;  /* 20px */
+  --space-6:  1.5rem;   /* 24px */
+  --space-8:  2rem;     /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+  --space-32: 8rem;     /* 128px */
+
+  /* ── SHADOWS ── */
+  --shadow-sm: 0 2px 8px rgba(15, 11, 46, 0.06);
+  --shadow-md: 0 6px 20px rgba(15, 11, 46, 0.08);
+  --shadow-lg: 0 14px 40px rgba(15, 11, 46, 0.12);
+  --shadow-xl: 0 24px 64px rgba(15, 11, 46, 0.16);
+  --shadow-indigo: 0 8px 24px rgba(108, 60, 233, 0.25);
+  --shadow-coral:  0 8px 24px rgba(255, 92, 43, 0.25);
+  --shadow-amber:  0 8px 24px rgba(245, 165, 36, 0.25);
+
+  /* ── BORDERS & RADIUS ── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* ── TRANSITIONS ── */
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-spring: 480ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── LAYOUT ── */
+  --container: 1320px;
+  --sidebar-w: 260px;
+  
+  --z-nav: 400;
+  --z-overlay: 100;
+  --z-modal: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+
+  /* ── SEMANTIC TOKENS (Light Theme - default) ── */
+  --bg-body: var(--n-50);
+  --bg-surface: var(--n-0);
+  --bg-surface-hover: var(--n-50);
+  --bg-elevated: var(--n-50);
+  --bg-sidebar: var(--n-0);
+  --bg-dark: var(--brand-indigo-950);
+
+  --text-main: var(--n-900);
+  --text-secondary: var(--n-600);
+  --text-muted: var(--n-400);
+  --text-inverse: var(--n-0);
+  --text-on-dark: var(--n-0);
+
+  --border-color: var(--n-200);
+  --border-strong: var(--n-300);
+}
+
+/* ── DARK THEME OVERRIDES ── */
+[data-theme="dark"] {
+  --bg-body: var(--n-950);
+  --bg-surface: var(--n-900);
+  --bg-surface-hover: var(--n-800);
+  --bg-elevated: var(--n-800);
+  --bg-sidebar: var(--n-900);
+
+  --text-main: var(--n-50);
+  --text-secondary: var(--n-300);
+  --text-muted: var(--n-500);
+  --text-inverse: var(--n-950);
+
+  --border-color: var(--n-800);
+  --border-strong: var(--n-700);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.6);
+}

@@ -1,0 +1,14 @@
+# FastAPI - the modern, high-performance Python web framework
+fastapi==0.115.0
+
+# Uvicorn - ASGI server to run our FastAPI app
+uvicorn[standard]==0.30.6
+
+# OpenAI Python SDK - used for OpenRouter (OpenAI-compatible API)
+openai>=1.30.0
+
+# python-dotenv - loads environment variables from .env file
+python-dotenv==1.1.0
+
+# CORS middleware (included in fastapi, but listed for clarity)
+# Pydantic is also included with fastapi for data validation

@@ -1,0 +1,6 @@
+Found {{ total }} events matching your request:
+
+{% for e in events %}- {{ e.title }} — {{ e.date }} — {{ e.location }} — {{ frontend_url }}/events/{{ e.id }}
+{% endfor %}
+
+You can open any event page to register. If you'd like, type "register <event id>" to register.

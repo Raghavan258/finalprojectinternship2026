@@ -1,0 +1,28 @@
+const mockEvents = [
+  {
+    id: 1,
+    title: "Mock Hackathon",
+    category: "hackathon",
+    categoryLabel: "Hackathon",
+    date: "2026-07-15",
+    location: "Online",
+    format: "Virtual",
+    price: "Free",
+    priceAmount: "0",
+    organizer: "ConnectMyEvent",
+    icon: "🎯",
+    color: "#000",
+    bgColor: "#fff",
+    description: "A seeded mock hackathon for local testing.",
+    prizes: "Prizes available",
+    registrationsCount: 0,
+    viewsCount: 0,
+    daysLeft: 10,
+    teamSize: "Team of 4",
+    featured: true,
+    timeline: [],
+    schedule: [],
+    speakers: [],
+    sponsors: [],
+  }
+];

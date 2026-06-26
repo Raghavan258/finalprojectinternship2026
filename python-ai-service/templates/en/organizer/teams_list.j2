@@ -1,0 +1,4 @@
+Teams ({{ teams | length }}) for event {{ event_id }}:
+
+{% for t in teams %}- {{ t.team_name }} ({{ t.team_id }}) — Members: {{ t.members | length }}
+{% endfor %}
