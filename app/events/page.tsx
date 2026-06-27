@@ -111,14 +111,10 @@ function BrowseEventsContent() {
           {[
             { value: "hackathon", label: "Hackathons" },
             { value: "workshop", label: "Workshops" },
-            { value: "jobfair", label: "Job Fairs" },
-            { value: "startup", label: "Startup Pitches" },
-            { value: "ngo", label: "NGO Programs" },
-            { value: "cultural", label: "Cultural Events" },
-            { value: "healthcare", label: "Healthcare Camps" },
-            { value: "volunteer", label: "Volunteer Drives" },
-            { value: "scholarship", label: "Scholarships" },
-            { value: "mentorship", label: "Mentorships" },
+            { value: "seminar", label: "Seminars" },
+            { value: "competition", label: "Competitions" },
+            { value: "placement", label: "Placements" },
+            { value: "conference", label: "Conferences" },
           ].map((cat) => (
             <label key={cat.value} className="filter-item">
               <input
@@ -138,18 +134,18 @@ function BrowseEventsContent() {
           <label className="filter-item">
             <input
               type="checkbox"
-              value="free"
-              checked={checkedPrices.includes("free")}
-              onChange={() => handlePriceChange("free")}
+              value="Free"
+              checked={checkedPrices.includes("Free")}
+              onChange={() => handlePriceChange("Free")}
             />{" "}
             Free Registration
           </label>
           <label className="filter-item">
             <input
               type="checkbox"
-              value="paid"
-              checked={checkedPrices.includes("paid")}
-              onChange={() => handlePriceChange("paid")}
+              value="Paid"
+              checked={checkedPrices.includes("Paid")}
+              onChange={() => handlePriceChange("Paid")}
             />{" "}
             Paid Registration
           </label>
@@ -161,20 +157,29 @@ function BrowseEventsContent() {
           <label className="filter-item">
             <input
               type="checkbox"
-              value="online"
-              checked={checkedFormats.includes("online")}
-              onChange={() => handleFormatChange("online")}
+              value="Online"
+              checked={checkedFormats.includes("Online")}
+              onChange={() => handleFormatChange("Online")}
             />{" "}
             Virtual / Online
           </label>
           <label className="filter-item">
             <input
               type="checkbox"
-              value="offline"
-              checked={checkedFormats.includes("offline")}
-              onChange={() => handleFormatChange("offline")}
+              value="In-Person"
+              checked={checkedFormats.includes("In-Person")}
+              onChange={() => handleFormatChange("In-Person")}
             />{" "}
             In-Person / Offline
+          </label>
+          <label className="filter-item">
+            <input
+              type="checkbox"
+              value="Hybrid"
+              checked={checkedFormats.includes("Hybrid")}
+              onChange={() => handleFormatChange("Hybrid")}
+            />{" "}
+            Hybrid
           </label>
         </div>
       </aside>
