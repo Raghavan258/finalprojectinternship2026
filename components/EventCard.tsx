@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Clock, Building, Calendar, MapPin } from "lucide-react";
+import { calculateDaysLeft } from "@/lib/utils";
 
 export interface EventData {
   id: string;
@@ -42,7 +43,7 @@ export default function EventCard({ event }: EventCardProps) {
             <div className="flex gap-2">
               <span className="badge badge-outline text-xs">
                 <Clock style={{ width: "11px", height: "11px", marginRight: "2px", display: "inline-block", verticalAlign: "middle" }} />
-                {event.daysLeft}d left
+                {calculateDaysLeft(event.date)}d left
               </span>
               {event.price === "free" ? (
                 <span className="badge badge-success text-xs">Free</span>

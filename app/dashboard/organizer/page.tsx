@@ -64,12 +64,18 @@ export default function OrganizerDashboard() {
 
   // Modal states
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [formStep, setFormStep] = useState(1);
   const [evtTitle, setEvtTitle] = useState("");
   const [evtCategory, setEvtCategory] = useState("hackathon");
   const [evtMode, setEvtMode] = useState("online");
+  const [evtLocation, setEvtLocation] = useState("");
   const [evtLimit, setEvtLimit] = useState("");
   const [evtDate, setEvtDate] = useState("");
   const [evtDesc, setEvtDesc] = useState("");
+  const [evtPrice, setEvtPrice] = useState("free");
+  const [evtPriceAmount, setEvtPriceAmount] = useState("");
+  const [evtTeamSize, setEvtTeamSize] = useState("");
+  const [evtPrizes, setEvtPrizes] = useState("");
 
   const loadData = async () => {
     try {
@@ -136,9 +142,14 @@ export default function OrganizerDashboard() {
           title: evtTitle,
           category: evtCategory,
           format: evtMode,
+          location: evtLocation,
           limit: parseInt(evtLimit) || 100,
           date: evtDate,
           description: evtDesc,
+          price: evtPrice,
+          priceAmount: evtPrice === "free" ? "Free" : evtPriceAmount,
+          teamSize: evtTeamSize || "Individual",
+          prizes: evtPrizes || "Certificate",
           organizer: userName,
         }),
       });
@@ -146,12 +157,18 @@ export default function OrganizerDashboard() {
       if (res.ok) {
         setCreateModalOpen(false);
         // Reset form
+        setFormStep(1);
         setEvtTitle("");
         setEvtCategory("hackathon");
         setEvtMode("online");
+        setEvtLocation("");
         setEvtLimit("");
         setEvtDate("");
         setEvtDesc("");
+        setEvtPrice("free");
+        setEvtPriceAmount("");
+        setEvtTeamSize("");
+        setEvtPrizes("");
         // Reload listings
         loadData();
       } else {
@@ -696,111 +713,154 @@ export default function OrganizerDashboard() {
             </div>
             <form onSubmit={handleCreateEvent}>
               <div className="modal-body">
-                <div className="input-group">
-                  <label className="input-label" htmlFor="evtTitle">
-                    Opportunity Title <span className="req">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="evtTitle"
-                    className="input"
-                    value={evtTitle}
-                    onChange={(e) => setEvtTitle(e.target.value)}
-                    placeholder="e.g. CodeStorm Hackathon"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="input-group">
-                    <label className="input-label" htmlFor="evtCategory">
-                      Category <span className="req">*</span>
-                    </label>
-                    <select
-                      id="evtCategory"
-                      className="select"
-                      value={evtCategory}
-                      onChange={(e) => setEvtCategory(e.target.value)}
-                      required
-                    >
-                      <option value="hackathon">Hackathon</option>
-                      <option value="workshop">Workshop</option>
-                      <option value="jobfair">Job Fair</option>
-                      <option value="startup">Startup Pitch</option>
-                      <option value="ngo">NGO Program</option>
-                      <option value="cultural">Cultural Event</option>
-                      <option value="volunteer">Volunteer Drive</option>
-                    </select>
+                {/* WIZARD STEPS HEADER */}
+                <div className="flex gap-2 mb-6 border-b" style={{ borderColor: "var(--border-color)", paddingBottom: "16px" }}>
+                  <div className={`flex-1 text-center text-xs font-bold ${formStep >= 1 ? "text-indigo" : "text-muted"}`}>
+                    <span className="block mb-1 text-sm">{formStep > 1 ? "✅" : "1"}</span> Basics
                   </div>
-                  <div className="input-group">
-                    <label className="input-label" htmlFor="evtMode">
-                      Participation Mode <span className="req">*</span>
-                    </label>
-                    <select
-                      id="evtMode"
-                      className="select"
-                      value={evtMode}
-                      onChange={(e) => setEvtMode(e.target.value)}
-                      required
-                    >
-                      <option value="online">Virtual / Online</option>
-                      <option value="offline">In-Person / Offline</option>
-                    </select>
+                  <div className={`flex-1 text-center text-xs font-bold ${formStep >= 2 ? "text-indigo" : "text-muted"}`}>
+                    <span className="block mb-1 text-sm">{formStep > 2 ? "✅" : "2"}</span> Logistics
+                  </div>
+                  <div className={`flex-1 text-center text-xs font-bold ${formStep >= 3 ? "text-indigo" : "text-muted"}`}>
+                    <span className="block mb-1 text-sm">3</span> Rewards
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="input-group">
-                    <label className="input-label" htmlFor="evtLimit">
-                      Attendee Limit <span className="req">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      id="evtLimit"
-                      className="input"
-                      value={evtLimit}
-                      onChange={(e) => setEvtLimit(e.target.value)}
-                      placeholder="e.g. 500"
-                      required
-                    />
+                {formStep === 1 && (
+                  <div className="step-content">
+                    <div className="input-group">
+                      <label className="input-label" htmlFor="evtTitle">
+                        Opportunity Title <span className="req">*</span>
+                      </label>
+                      <input type="text" id="evtTitle" className="input" value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} placeholder="e.g. CodeStorm Hackathon" required />
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label" htmlFor="evtCategory">
+                        Category <span className="req">*</span>
+                      </label>
+                      <select id="evtCategory" className="select" value={evtCategory} onChange={(e) => setEvtCategory(e.target.value)} required>
+                        <option value="hackathon">Hackathon</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="jobfair">Job Fair</option>
+                        <option value="startup">Startup Pitch</option>
+                        <option value="ngo">NGO Program</option>
+                        <option value="cultural">Cultural Event</option>
+                        <option value="volunteer">Volunteer Drive</option>
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label className="input-label" htmlFor="evtDesc">
+                        Opportunity Description <span className="req">*</span>
+                      </label>
+                      <textarea id="evtDesc" className="textarea" rows={4} value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} placeholder="Describe the overview, guidelines, and context..." required></textarea>
+                    </div>
                   </div>
-                  <div className="input-group">
-                    <label className="input-label" htmlFor="evtDate">
-                      Event Date <span className="req">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="evtDate"
-                      className="input"
-                      value={evtDate}
-                      onChange={(e) => setEvtDate(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
+                )}
 
-                <div className="input-group">
-                  <label className="input-label" htmlFor="evtDesc">
-                    Opportunity Description <span className="req">*</span>
-                  </label>
-                  <textarea
-                    id="evtDesc"
-                    className="textarea"
-                    rows={4}
-                    value={evtDesc}
-                    onChange={(e) => setEvtDesc(e.target.value)}
-                    placeholder="Describe the overview, guidelines, and prizes..."
-                    required
-                  ></textarea>
-                </div>
+                {formStep === 2 && (
+                  <div className="step-content">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="input-group">
+                        <label className="input-label" htmlFor="evtDate">
+                          Event Date <span className="req">*</span>
+                        </label>
+                        <input type="date" id="evtDate" className="input" value={evtDate} onChange={(e) => setEvtDate(e.target.value)} required />
+                      </div>
+                      <div className="input-group">
+                        <label className="input-label" htmlFor="evtMode">
+                          Participation Mode <span className="req">*</span>
+                        </label>
+                        <select id="evtMode" className="select" value={evtMode} onChange={(e) => setEvtMode(e.target.value)} required>
+                          <option value="online">Virtual / Online</option>
+                          <option value="offline">In-Person / Offline</option>
+                        </select>
+                      </div>
+                    </div>
+                    {evtMode === "offline" && (
+                      <div className="input-group">
+                        <label className="input-label" htmlFor="evtLocation">
+                          Venue / Location <span className="req">*</span>
+                        </label>
+                        <input type="text" id="evtLocation" className="input" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} placeholder="e.g. Main Auditorium, City Campus" required={evtMode === "offline"} />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {formStep === 3 && (
+                  <div className="step-content">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="input-group">
+                        <label className="input-label" htmlFor="evtTeamSize">
+                          Team Size <span className="req">*</span>
+                        </label>
+                        <input type="text" id="evtTeamSize" className="input" value={evtTeamSize} onChange={(e) => setEvtTeamSize(e.target.value)} placeholder="e.g. 1-4 Members, Individual" required />
+                      </div>
+                      <div className="input-group">
+                        <label className="input-label" htmlFor="evtLimit">
+                          Attendee Capacity <span className="req">*</span>
+                        </label>
+                        <input type="number" id="evtLimit" className="input" value={evtLimit} onChange={(e) => setEvtLimit(e.target.value)} placeholder="e.g. 500" required />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="input-group">
+                        <label className="input-label" htmlFor="evtPrice">
+                          Registration Fee <span className="req">*</span>
+                        </label>
+                        <select id="evtPrice" className="select" value={evtPrice} onChange={(e) => setEvtPrice(e.target.value)} required>
+                          <option value="free">Free</option>
+                          <option value="paid">Paid</option>
+                        </select>
+                      </div>
+                      {evtPrice === "paid" && (
+                        <div className="input-group">
+                          <label className="input-label" htmlFor="evtPriceAmount">
+                            Fee Amount <span className="req">*</span>
+                          </label>
+                          <input type="text" id="evtPriceAmount" className="input" value={evtPriceAmount} onChange={(e) => setEvtPriceAmount(e.target.value)} placeholder="e.g. $15, 500 INR" required={evtPrice === "paid"} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="input-group">
+                      <label className="input-label" htmlFor="evtPrizes">
+                        Prizes & Incentives
+                      </label>
+                      <input type="text" id="evtPrizes" className="input" value={evtPrizes} onChange={(e) => setEvtPrizes(e.target.value)} placeholder="e.g. $5,000 + Swag kit" />
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-ghost" onClick={() => setCreateModalOpen(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Publish Listing
-                </button>
+              <div className="modal-footer" style={{ display: "flex", justifyContent: "space-between" }}>
+                {formStep > 1 ? (
+                  <button type="button" className="btn btn-ghost" onClick={() => setFormStep(formStep - 1)}>
+                    Back
+                  </button>
+                ) : (
+                  <button type="button" className="btn btn-ghost" onClick={() => { setCreateModalOpen(false); setFormStep(1); }}>
+                    Cancel
+                  </button>
+                )}
+                
+                {formStep < 3 ? (
+                  <button type="button" className="btn btn-primary" onClick={(e) => { 
+                    // basic form validation before next step
+                    const form = e.currentTarget.closest('form');
+                    if(form?.checkValidity()) {
+                      setFormStep(formStep + 1);
+                    } else {
+                      form?.reportValidity();
+                    }
+                  }}>
+                    Next Step
+                  </button>
+                ) : (
+                  <button type="submit" className="btn btn-primary">
+                    Publish Listing
+                  </button>
+                )}
               </div>
             </form>
           </div>

@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, category, format, limit, date, description, organizer } = body;
+    const { title, category, format, limit, date, description, organizer, location, price, priceAmount, teamSize, prizes } = body;
 
     if (!title || !category || !format || !date || !description || !organizer) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -89,17 +89,17 @@ export async function POST(request: Request) {
         category,
         categoryLabel,
         date: formattedDate,
-        location: format === "online" ? "Online (Virtual)" : "In-Person (Offline)",
+        location: location || (format === "online" ? "Online (Virtual)" : "In-Person (Offline)"),
         format,
-        price: "free",
-        priceAmount: "Free",
+        price: price || "free",
+        priceAmount: priceAmount || "Free",
         organizer,
         icon,
         color,
         bgColor,
         description,
-        prizes: "Certificate + Swag",
-        teamSize: "1-4 Members",
+        prizes: prizes || "Certificate + Swag",
+        teamSize: teamSize || "1-4 Members",
         featured: false,
         timeline: [],
         schedule: [],

@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, Search } from "lucide-react";
 import EventCard, { EventData } from "@/components/EventCard";
+import { calculateDaysLeft } from "@/lib/utils";
 
 function BrowseEventsContent() {
   const searchParams = useSearchParams();
@@ -55,7 +56,7 @@ function BrowseEventsContent() {
     if (sortBy === "popular") {
       result.sort((a, b) => b.registrationsCount - a.registrationsCount);
     } else if (sortBy === "days-left") {
-      result.sort((a, b) => a.daysLeft - b.daysLeft);
+      result.sort((a, b) => calculateDaysLeft(a.date) - calculateDaysLeft(b.date));
     } else {
       // relevance / upcoming (id order)
       result.sort((a, b) => String(a.id).localeCompare(String(b.id)));

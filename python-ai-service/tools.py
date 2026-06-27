@@ -39,7 +39,7 @@ def _fetch_events_from_api() -> list[dict]:
     Fetch all events from the ConnectMyEvent Next.js API.
     Falls back to mock data if the API is unavailable.
     """
-    nextjs_url = os.getenv("NEXTJS_URL", "http://localhost:3000")
+    nextjs_url = os.getenv("NEXTJS_URL", "http://127.0.0.1:3000")
     try:
         url = f"{nextjs_url}/api/events"
         req = urllib.request.Request(url, headers={"Accept": "application/json"})

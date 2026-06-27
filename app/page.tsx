@@ -21,6 +21,14 @@ export default function Home() {
   const [liveEvents, setLiveEvents] = useState<EventData[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [sliderIndex, setSliderIndex] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState("participant");
+
+  // Load auth state
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+    setUserRole(localStorage.getItem("userRole") || "participant");
+  }, []);
 
   // Load featured events
   useEffect(() => {
@@ -346,7 +354,11 @@ export default function Home() {
             Whether hosting a 24h coding challenge or volunteer drive, ConnectMyEvent gives you all tools to list, screen, and issue credentials.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link href="/register?role=organizer" className="btn btn-coral btn-lg">Publish Event Now</Link>
+            {isLoggedIn && userRole === "organizer" ? (
+              <Link href="/dashboard/organizer" className="btn btn-coral btn-lg">Go to Organizer Dashboard</Link>
+            ) : (
+              <Link href="/register?role=organizer" className="btn btn-coral btn-lg">Publish Event Now</Link>
+            )}
           </div>
         </div>
       </section>

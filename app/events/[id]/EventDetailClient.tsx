@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShieldCheck, Milestone, CalendarCheck, UsersRound, Calendar, MapPin, Users, Hourglass, Plus } from "lucide-react";
 import { EventData } from "@/components/EventCard";
 import TranslateButton from "@/components/TranslateButton";
+import { calculateDaysLeft } from "@/lib/utils";
 
 interface EventDetailClientProps {
   event: EventData;
@@ -306,7 +307,7 @@ export default function EventDetailClient({ event }: EventDetailClientProps) {
                 <div>
                   <span className="text-xs text-muted block">Application Window</span>
                   <span className="font-bold text-xs text-coral" style={{ color: "var(--brand-coral-500)" }}>
-                    {event.daysLeft} days left
+                    {calculateDaysLeft(event.date)} days left
                   </span>
                 </div>
               </div>

@@ -10,7 +10,7 @@ interface Message {
   isHtml?: boolean;
 }
 
-const QUICK_SUGGESTIONS = [
+const PARTICIPANT_SUGGESTIONS = [
   { label: "Find hackathons", text: "Find hackathons in my city" },
   { label: "Navigate to dashboard", text: "How do I get to my dashboard?" },
   { label: "Team matching", text: "Help me find teammates for a hackathon" },
@@ -19,16 +19,45 @@ const QUICK_SUGGESTIONS = [
   { label: "Recommend events", text: "Recommend events for a Python developer" },
 ];
 
-export default function Chatbot({ userRole = "participant" }: { userRole?: string }) {
+const ORGANIZER_SUGGESTIONS = [
+  { label: "Create an Event", text: "How do I create a new event?" },
+  { label: "Analyze Feedback", text: "How do I analyze post-event feedback?" },
+  { label: "Generate Agenda", text: "Help me generate a workshop agenda" },
+  { label: "AI Copilot", text: "What is the AI Copilot?" },
+  { label: "Navigate to dashboard", text: "Take me to my organizer dashboard" },
+];
+
+export default function Chatbot() {
+  const [role, setRole] = useState("participant");
+
+  useEffect(() => {
+    const updateRole = () => {
+      setRole(localStorage.getItem("userRole") || "participant");
+    };
+    updateRole();
+    window.addEventListener("authChange", updateRole);
+    return () => window.removeEventListener("authChange", updateRole);
+  }, []);
+
+  const isOrganizer = role === "organizer";
+  const QUICK_SUGGESTIONS = isOrganizer ? ORGANIZER_SUGGESTIONS : PARTICIPANT_SUGGESTIONS;
+
+  const initialMessage = isOrganizer
+    ? `Hi! I'm <strong>ConnectAI</strong>, your Organizer Assistant 👋<br><br>I can help you:<br><ul><li>📝 Create and manage listings</li><li>🤖 Use the AI Copilot</li><li>📊 Analyze participant feedback</li><li>🗓️ Generate workshop agendas</li></ul>What can I help you with?`
+    : `Hi! I'm <strong>ConnectAI</strong> 👋<br>Your intelligent assistant for ConnectMyEvent.<br><br>I can help you:<br><ul><li>🧭 Navigate the platform</li><li>🎯 Find personalized events</li><li>🌐 Translate event content</li><li>👥 Find teammates</li><li>💡 Evaluate your hackathon ideas</li><li>⚡ And much more!</li></ul>What can I help you with?`;
+
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "init",
-      text: `Hi! I'm <strong>ConnectAI</strong> 👋<br>Your intelligent assistant for ConnectMyEvent.<br><br>I can help you:<br><ul><li>🧭 Navigate the platform</li><li>🎯 Find personalized events</li><li>🌐 Translate event content</li><li>👥 Find teammates</li><li>💡 Evaluate your hackathon ideas</li><li>⚡ And much more!</li></ul>What can I help you with?`,
-      sender: "bot",
-      isHtml: true,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    setMessages(prev => {
+      if (prev.length <= 1) {
+        return [{ id: "init", text: initialMessage, sender: "bot", isHtml: true }];
+      }
+      return prev;
+    });
+  }, [initialMessage]);
+
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
@@ -55,7 +84,7 @@ export default function Chatbot({ userRole = "participant" }: { userRole?: strin
       const res = await fetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, user_role: userRole }),
+        body: JSON.stringify({ message: text, user_role: role }),
       });
       const data = await res.json();
 
@@ -90,9 +119,9 @@ export default function Chatbot({ userRole = "participant" }: { userRole?: strin
     setMessages([
       {
         id: "reset",
-        text: "Chat reset! 👋 How can I help you?",
+        text: initialMessage,
         sender: "bot",
-        isHtml: false,
+        isHtml: true,
       },
     ]);
     setShowSuggestions(true);
