@@ -49,6 +49,16 @@ function searchEvents(events: any[], params: {
   return results.slice(0, 8);
 }
 
+function calculateDaysLeft(dateStr: string): number {
+  if (!dateStr) return 0;
+  const eventDate = new Date(dateStr);
+  const today = new Date();
+  eventDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
+}
+
 function formatEventForAI(e: any) {
   return {
     id: e.id,
@@ -61,7 +71,7 @@ function formatEventForAI(e: any) {
     price: e.priceAmount || e.price,
     prizes: e.prizes,
     teamSize: e.teamSize,
-    daysLeft: e.daysLeft,
+    daysLeft: calculateDaysLeft(e.date),
     registrations: e.registrationsCount || 0,
     description: e.description ? e.description.substring(0, 300) : "",
     url: `/events/${e.id}`,
