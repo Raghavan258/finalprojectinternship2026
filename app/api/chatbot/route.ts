@@ -51,7 +51,25 @@ function searchEvents(events: any[], params: {
 
 function calculateDaysLeft(dateStr: string): number {
   if (!dateStr) return 0;
-  const eventDate = new Date(dateStr);
+
+  // Handle "Jul 12, 2026" format (stored in DB as formatted string)
+  const MONTHS: Record<string, number> = {
+    jan:0, feb:1, mar:2, apr:3, may:4, jun:5,
+    jul:6, aug:7, sep:8, oct:9, nov:10, dec:11
+  };
+  const friendly = dateStr.match(/^([A-Za-z]{3})\s+(\d{1,2}),?\s+(\d{4})$/);
+  let eventDate: Date;
+  if (friendly) {
+    const [, mon, day, year] = friendly;
+    const m = MONTHS[mon.toLowerCase()];
+    eventDate = new Date(parseInt(year), m, parseInt(day));
+  } else {
+    // Fallback: ISO or any other format
+    eventDate = new Date(dateStr);
+  }
+
+  if (isNaN(eventDate.getTime())) return 0;
+
   const today = new Date();
   eventDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
