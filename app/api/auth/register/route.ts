@@ -34,8 +34,8 @@ export async function POST(request: Request) {
       },
     });
 
-    // Send Welcome Email (Non-blocking ideally, but awaited here for simplicity)
-    await sendEmail(
+    // Send Welcome Email (Non-blocking)
+    sendEmail(
       newUser.email,
       "Welcome to ConnectMyEvent! 🎉",
       `
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         <p>Best regards,<br/><strong>The ConnectMyEvent Team</strong></p>
       </div>
       `
-    );
+    ).catch(err => console.error("Email failed (non-fatal):", err));
 
     return NextResponse.json({
       success: true,
