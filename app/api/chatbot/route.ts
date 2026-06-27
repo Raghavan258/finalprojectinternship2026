@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
@@ -21,16 +22,13 @@ const PLATFORM_PAGES: Record<string, { url: string; label: string; steps: string
   agenda:               { url: "/dashboard",           label: "Agenda Generator",       steps: ["Go to your Organizer Dashboard.", "Click 'Generate Agenda'.", "Enter your workshop topics and duration."] },
 };
 
-// --- Fetch all events from DB via internal API ---
+// --- Fetch all events directly from DB (no HTTP round-trip) ---
 async function fetchEvents(): Promise<any[]> {
   try {
-    const res = await fetch(`${APP_URL}/api/events`, {
-      next: { revalidate: 60 }, // cache 60s
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch {
+    const events = await db.event.findMany({ orderBy: { id: "asc" } });
+    return events as any[];
+  } catch (err) {
+    console.error("fetchEvents DB error:", err);
     return [];
   }
 }
