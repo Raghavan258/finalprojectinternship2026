@@ -14,14 +14,19 @@ import {
   Plus,
   Sun,
   Moon,
-  Bell,
   Trash,
   Banknote,
   Star,
   X,
   CalendarPlus,
+  Bot,
+  CalendarClock,
 } from "lucide-react";
 import { EventData } from "@/components/EventCard";
+import AICopilotPanel from "@/components/AICopilotPanel";
+import AgendaGenerator from "@/components/AgendaGenerator";
+import FeedbackAnalyticsDashboard from "@/components/FeedbackAnalyticsDashboard";
+import NotificationCenter from "@/components/NotificationCenter";
 
 interface AttendeeRegistration {
   id: number;
@@ -50,6 +55,7 @@ export default function OrganizerDashboard() {
   // Layout states
   const [theme, setTheme] = useState("light");
   const [userName, setUserName] = useState("Organizer");
+  const [userEmail, setUserEmail] = useState("");
   const [notiOpen, setNotiOpen] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: 1, title: "New Registration!", desc: "A new candidate registered for CodeStorm National Hackathon.", read: false },
@@ -93,6 +99,7 @@ export default function OrganizerDashboard() {
     }
 
     setUserName(localStorage.getItem("userName") || "Organizer");
+    setUserEmail(localStorage.getItem("userEmail") || "");
 
     // Theme setup
     const savedTheme = localStorage.getItem("theme") || "light";
@@ -243,6 +250,25 @@ export default function OrganizerDashboard() {
           >
             <BarChart2 /> Analytics
           </div>
+          {/* AI Features nav items */}
+          <div
+            className={`nav-item ${activeSection === "section-copilot" ? "active" : ""}`}
+            onClick={() => { setActiveSection("section-copilot"); setSidebarOpen(false); }}
+          >
+            <Bot style={{ width: 16, height: 16 }} /> AI Copilot
+          </div>
+          <div
+            className={`nav-item ${activeSection === "section-agenda" ? "active" : ""}`}
+            onClick={() => { setActiveSection("section-agenda"); setSidebarOpen(false); }}
+          >
+            <CalendarClock style={{ width: 16, height: 16 }} /> Agenda Generator
+          </div>
+          <div
+            className={`nav-item ${activeSection === "section-feedback" ? "active" : ""}`}
+            onClick={() => { setActiveSection("section-feedback"); setSidebarOpen(false); }}
+          >
+            <BarChart2 style={{ width: 16, height: 16 }} /> Feedback Analytics
+          </div>
           <div className="divider" style={{ margin: "12px 0" }}></div>
           <button
             type="button"
@@ -304,54 +330,10 @@ export default function OrganizerDashboard() {
               )}
             </button>
 
-            {/* Notifications Dropdown */}
-            <div className="noti-dropdown-container">
-              <button
-                type="button"
-                className="btn btn-ghost p-2"
-                onClick={() => setNotiOpen(!notiOpen)}
-                style={{
-                  borderRadius: "var(--radius-full)",
-                  padding: "8px",
-                  width: "36px",
-                  height: "36px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Bell style={{ width: "18px", height: "18px" }} />
-                {hasUnreadNoti && <span className="noti-badge-dot"></span>}
-              </button>
-
-              {notiOpen && (
-                <div className="noti-dropdown open">
-                  <div className="noti-dropdown-header">
-                    <span>Notifications</span>
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm text-indigo"
-                      onClick={markAllNotificationsRead}
-                      style={{ padding: "2px 6px", fontSize: "10px" }}
-                    >
-                      Mark read
-                    </button>
-                  </div>
-                  <div className="noti-dropdown-body">
-                    {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className={`noti-item ${!n.read ? "unread" : ""}`}
-                        onClick={() => readNoti(n.id)}
-                      >
-                        <span className="fw-bold block text-main">{n.title}</span>
-                        <span className="text-xs text-secondary mt-1 block">{n.desc}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* AI Notification Center — Feature 9 */}
+            {userEmail && (
+              <NotificationCenter email={userEmail} userName={userName} />
+            )}
 
             <div className="avatar avatar-sm">
               {userName.split(" ").map((n) => n.charAt(0)).join("").toUpperCase()}
@@ -665,6 +647,37 @@ export default function OrganizerDashboard() {
               </div>
             </div>
           )}
+
+          {/* AI FEATURE 4 — Organizer Copilot */}
+          {activeSection === "section-copilot" && (
+            <div className="dashboard-panel-section active">
+              <h2 className="text-2xl font-bold font-display mb-6">
+                <span className="text-indigo">AI</span> Organizer Copilot
+              </h2>
+              <AICopilotPanel organizerName={userName} />
+            </div>
+          )}
+
+          {/* AI FEATURE 7 — Agenda Generator */}
+          {activeSection === "section-agenda" && (
+            <div className="dashboard-panel-section active">
+              <h2 className="text-2xl font-bold font-display mb-6">
+                <span className="text-indigo">AI</span> Workshop Agenda Generator
+              </h2>
+              <AgendaGenerator />
+            </div>
+          )}
+
+          {/* AI FEATURE 8 — Feedback Analytics */}
+          {activeSection === "section-feedback" && (
+            <div className="dashboard-panel-section active">
+              <h2 className="text-2xl font-bold font-display mb-6">
+                <span className="text-indigo">AI</span> Feedback & Sentiment Analytics
+              </h2>
+              <FeedbackAnalyticsDashboard />
+            </div>
+          )}
+
         </div>
       </main>
 

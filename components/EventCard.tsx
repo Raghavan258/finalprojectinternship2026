@@ -35,7 +35,7 @@ interface EventCardProps {
 export default function EventCard({ event }: EventCardProps) {
   return (
     <article className="card flex flex-col h-full" style={{ borderTop: `3.5px solid ${event.color}` }}>
-      <div className="p-5 flex-1 flex flex-col justify-between">
+      <div className="flex-1 flex flex-col justify-between" style={{ padding: "24px" }}>
         <div>
           <div className="flex justify-between items-start mb-4">
             <span className={`badge badge-cat-${event.category}`}>{event.categoryLabel}</span>

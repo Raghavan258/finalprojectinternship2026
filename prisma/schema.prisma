@@ -8,18 +8,26 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
-  email         String         @unique
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  email         String          @unique
   password      String
   name          String
-  role          String         // "participant", "organizer", etc.
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  role          String          // "participant", "organizer", etc.
+  // AI Feature fields
+  skills        String[]        @default([])
+  department    String?
+  interests     String[]        @default([])
+  language      String          @default("en")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   registrations Registration[]
+  teamRequests  TeamRequest[]
+  notifications Notification[]
+  feedbacks     EventFeedback[]
 }
 
 model Event {
-  id                 String         @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String          @id @default(auto()) @map("_id") @db.ObjectId
   title              String
   category           String
   categoryLabel      String
@@ -34,18 +42,24 @@ model Event {
   bgColor            String
   description        String
   prizes             String
-  registrationsCount Int            @default(0)
-  viewsCount         Int            @default(0)
-  daysLeft           Int            @default(0)
+  registrationsCount Int             @default(0)
+  viewsCount         Int             @default(0)
+  daysLeft           Int             @default(0)
   teamSize           String
-  featured           Boolean        @default(false)
-  timeline           Json[]         // List of { date: String, label: String }
-  schedule           Json[]         // List of { time: String, title: String }
-  speakers           Json[]         // List of { name: String, role: String }
-  sponsors           Json[]         // List of { name: String, logo: String }
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  featured           Boolean         @default(false)
+  timeline           Json[]          // List of { date: String, label: String }
+  schedule           Json[]          // List of { time: String, title: String }
+  speakers           Json[]          // List of { name: String, role: String }
+  sponsors           Json[]          // List of { name: String, logo: String }
+  // AI Feature fields
+  tags               String[]        @default([])
+  evaluationCriteria String?
+  agendaJson         String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
   registrations      Registration[]
+  teamRequests       TeamRequest[]
+  feedbacks          EventFeedback[]
 }
 
 model Registration {
@@ -58,3 +72,48 @@ model Registration {
 
   @@unique([userId, eventId])
 }
+
+// ── Feature 5: Participant Team Matchmaker ─────────────────────────────────
+model TeamRequest {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  eventId     String   @db.ObjectId
+  skills      String[] @default([]) // skills offered by this student
+  lookingFor  String[] @default([]) // skills this student needs
+  description String
+  isOpen      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+// ── Feature 9: Smart Notification & Alert Dispatcher ──────────────────────
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  title     String
+  body      String
+  type      String   // "deadline", "team_invite", "schedule_change", "general"
+  priority  Int      @default(0) // higher = more urgent
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ── Feature 8: Post-Event Feedback & Sentiment Analyzer ───────────────────
+model EventFeedback {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId   String   @db.ObjectId
+  userId    String   @db.ObjectId
+  rating    Int      // 1-5
+  text      String
+  sentiment String?  // "positive", "neutral", "negative" — filled by AI
+  tags      String[] @default([]) // AI-extracted themes e.g. "logistics", "content"
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+}
+

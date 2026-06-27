@@ -10,5 +10,8 @@ openai>=1.30.0
 # python-dotenv - loads environment variables from .env file
 python-dotenv==1.1.0
 
+# PyMongo - direct MongoDB access for Team Matchmaker and other features
+pymongo>=4.6.0
+
 # CORS middleware (included in fastapi, but listed for clarity)
 # Pydantic is also included with fastapi for data validation

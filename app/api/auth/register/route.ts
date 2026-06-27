@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -32,6 +33,21 @@ export async function POST(request: Request) {
         role,
       },
     });
+
+    // Send Welcome Email (Non-blocking ideally, but awaited here for simplicity)
+    await sendEmail(
+      newUser.email,
+      "Welcome to ConnectMyEvent! 🎉",
+      `
+      <div style="font-family: sans-serif; padding: 20px; color: #333;">
+        <h2 style="color: #6366f1;">Hi ${newUser.name},</h2>
+        <p>Welcome to <strong>ConnectMyEvent</strong>! We're thrilled to have you join our community as a <strong>${newUser.role}</strong>.</p>
+        <p>You can now browse events, register for hackathons, and use our AI Team Matchmaker to find the perfect teammates.</p>
+        <br/>
+        <p>Best regards,<br/><strong>The ConnectMyEvent Team</strong></p>
+      </div>
+      `
+    );
 
     return NextResponse.json({
       success: true,

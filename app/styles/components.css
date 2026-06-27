@@ -390,6 +390,17 @@
   box-shadow: var(--shadow-sm);
 }
 
+[data-theme="dark"] .cat-tab:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--brand-indigo-600);
+}
+
+[data-theme="dark"] .cat-tab.active {
+  background: var(--brand-indigo-600);
+  border-color: var(--brand-indigo-400);
+  color: var(--text-inverse);
+}
+
 .cat-tab-icon {
   font-size: 28px;
 }

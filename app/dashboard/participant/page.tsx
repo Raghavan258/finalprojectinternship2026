@@ -13,15 +13,19 @@ import {
   Menu,
   Sun,
   Moon,
-  Bell,
   X,
   Ticket,
   QrCode,
   CheckCircle,
   Sparkles,
   Download,
+  FlaskConical,
 } from "lucide-react";
 import { EventData } from "@/components/EventCard";
+import RecommendationPanel from "@/components/RecommendationPanel";
+import TeamMatchPanel from "@/components/TeamMatchPanel";
+import IdeaEvaluator from "@/components/IdeaEvaluator";
+import NotificationCenter from "@/components/NotificationCenter";
 
 interface RegistrationDetails {
   id: number;
@@ -210,6 +214,25 @@ export default function ParticipantDashboard() {
           >
             <Award /> Certificates
           </div>
+          {/* AI Feature nav items */}
+          <div
+            className={`nav-item ${activeSection === "section-recommendations" ? "active" : ""}`}
+            onClick={() => { setActiveSection("section-recommendations"); setSidebarOpen(false); }}
+          >
+            <Sparkles style={{ width: 16, height: 16 }} /> AI Recommendations
+          </div>
+          <div
+            className={`nav-item ${activeSection === "section-team-match" ? "active" : ""}`}
+            onClick={() => { setActiveSection("section-team-match"); setSidebarOpen(false); }}
+          >
+            <Users style={{ width: 16, height: 16 }} /> Team Matchmaker
+          </div>
+          <div
+            className={`nav-item ${activeSection === "section-idea" ? "active" : ""}`}
+            onClick={() => { setActiveSection("section-idea"); setSidebarOpen(false); }}
+          >
+            <FlaskConical style={{ width: 16, height: 16 }} /> Idea Evaluator
+          </div>
           <div className="divider" style={{ margin: "12px 0" }}></div>
           <button
             type="button"
@@ -266,54 +289,10 @@ export default function ParticipantDashboard() {
               )}
             </button>
 
-            {/* Notifications Dropdown */}
-            <div className="noti-dropdown-container">
-              <button
-                type="button"
-                className="btn btn-ghost p-2"
-                onClick={() => setNotiOpen(!notiOpen)}
-                style={{
-                  borderRadius: "var(--radius-full)",
-                  padding: "8px",
-                  width: "36px",
-                  height: "36px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Bell style={{ width: "18px", height: "18px" }} />
-                {hasUnreadNoti && <span className="noti-badge-dot"></span>}
-              </button>
-
-              {notiOpen && (
-                <div className="noti-dropdown open">
-                  <div className="noti-dropdown-header">
-                    <span>Notifications</span>
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm text-indigo"
-                      onClick={markAllNotificationsRead}
-                      style={{ padding: "2px 6px", fontSize: "10px" }}
-                    >
-                      Mark read
-                    </button>
-                  </div>
-                  <div className="noti-dropdown-body">
-                    {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className={`noti-item ${!n.read ? "unread" : ""}`}
-                        onClick={() => readNoti(n.id)}
-                      >
-                        <span className="fw-bold block text-main">{n.title}</span>
-                        <span className="text-xs text-secondary mt-1 block">{n.desc}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* AI Notification Center — Feature 9 */}
+            {userEmail && (
+              <NotificationCenter email={userEmail} userName={userName} />
+            )}
 
             <div className="avatar avatar-sm">{userName.charAt(0).toUpperCase()}</div>
           </div>
@@ -567,6 +546,39 @@ export default function ParticipantDashboard() {
               </div>
             </div>
           )}
+
+          {/* AI FEATURE 2 — Personalized Recommendations */}
+          {activeSection === "section-recommendations" && (
+            <div className="dashboard-panel-section active">
+              <h2 className="text-2xl font-bold font-display mb-6">
+                <span className="text-indigo">AI</span> Event Recommendations
+              </h2>
+              {userEmail && (
+                <RecommendationPanel email={userEmail} userName={userName} />
+              )}
+            </div>
+          )}
+
+          {/* AI FEATURE 5 — Team Matchmaker */}
+          {activeSection === "section-team-match" && (
+            <div className="dashboard-panel-section active">
+              <h2 className="text-2xl font-bold font-display mb-6">
+                <span className="text-indigo">AI</span> Team Matchmaker
+              </h2>
+              <TeamMatchPanel email={userEmail} userName={userName} />
+            </div>
+          )}
+
+          {/* AI FEATURE 6 — Idea Evaluator */}
+          {activeSection === "section-idea" && (
+            <div className="dashboard-panel-section active">
+              <h2 className="text-2xl font-bold font-display mb-6">
+                <span className="text-indigo">AI</span> Hackathon Idea Evaluator
+              </h2>
+              <IdeaEvaluator />
+            </div>
+          )}
+
         </div>
       </main>
 

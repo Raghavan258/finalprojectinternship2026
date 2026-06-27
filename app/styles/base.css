@@ -9,6 +9,33 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+[data-theme="dark"] body {
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+    var(--bg-body);
+  background-attachment: fixed;
+}
+
+[data-theme="dark"] .bento-card,
+[data-theme="dark"] .event-card,
+[data-theme="dark"] .filter-sidebar,
+[data-theme="dark"] .top-bar,
+[data-theme="dark"] .auth-card,
+[data-theme="dark"] .dashboard-card,
+[data-theme="dark"] .dashboard-stat-card,
+[data-theme="dark"] .hero-search-bar,
+[data-theme="dark"] .sticky-register-card,
+[data-theme="dark"] .chatbot-window,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .team-panel,
+[data-theme="dark"] .carousel-section,
+[data-theme="dark"] .testimonial-card,
+[data-theme="dark"] .profile-dropdown {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   color: var(--text-main);

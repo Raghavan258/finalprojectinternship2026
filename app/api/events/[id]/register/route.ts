@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
 
 export async function POST(
   request: Request,
@@ -74,6 +75,27 @@ export async function POST(
         },
       }),
     ]);
+
+    // Send Event Registration Email
+    await sendEmail(
+      user.email,
+      `Registration Confirmed: ${event.title}`,
+      `
+      <div style="font-family: sans-serif; padding: 20px; color: #333;">
+        <h2 style="color: #6366f1;">Registration Confirmed! 🎉</h2>
+        <p>Hi ${user.name},</p>
+        <p>You have successfully registered for <strong>${event.title}</strong>.</p>
+        <ul>
+          <li><strong>Date:</strong> ${event.date}</li>
+          <li><strong>Location:</strong> ${event.location}</li>
+          <li><strong>Format:</strong> ${event.format}</li>
+        </ul>
+        <p>We look forward to seeing you there! Don't forget to use the AI Team Matchmaker if you need a team.</p>
+        <br/>
+        <p>Best regards,<br/><strong>The ConnectMyEvent Team</strong></p>
+      </div>
+      `
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

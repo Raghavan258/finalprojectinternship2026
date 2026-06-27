@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ShieldCheck, Milestone, CalendarCheck, UsersRound, Calendar, MapPin, Users, Hourglass, Plus } from "lucide-react";
 import { EventData } from "@/components/EventCard";
+import TranslateButton from "@/components/TranslateButton";
 
 interface EventDetailClientProps {
   event: EventData;
@@ -63,7 +64,7 @@ export default function EventDetailClient({ event }: EventDetailClientProps) {
         <div className="event-banner-content">
           <div className="event-banner-icon">{event.icon}</div>
           <div>
-            <div className="flex gap-2 items-center mb-2">
+            <div className="flex gap-2 items-center mb-2 flex-wrap">
               <span className={`badge badge-cat-${event.category}`}>{event.categoryLabel}</span>
               <span className="badge badge-success">
                 <ShieldCheck style={{ width: "12px", height: "12px", marginRight: "2px", display: "inline-block", verticalAlign: "middle" }} /> Verified
@@ -75,6 +76,9 @@ export default function EventDetailClient({ event }: EventDetailClientProps) {
             <p className="text-sm mt-1" style={{ color: "var(--brand-indigo-200)", margin: 0 }}>
               Hosted by <span className="fw-bold" style={{ color: "#fff" }}>{event.organizer}</span>
             </p>
+            <div style={{ marginTop: 12 }}>
+              <TranslateButton eventId={event.id} eventTitle={event.title} />
+            </div>
           </div>
         </div>
       </div>
