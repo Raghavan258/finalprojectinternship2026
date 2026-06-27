@@ -4,10 +4,10 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://connectmyevent.vercel.app";
 
-// ─── In-memory session store ───────────────────────────────────────────────
+// --- In-memory session store ---
 const sessions = new Map<string, Array<{ role: string; content: string }>>();
 
-// ─── Platform navigation map ───────────────────────────────────────────────
+// --- Platform navigation map ---
 const PLATFORM_PAGES: Record<string, { url: string; label: string; steps: string[] }> = {
   home:                 { url: "/",                    label: "Home",                  steps: ["Click the ConnectMyEvent logo or navigate to the homepage."] },
   events:               { url: "/events",              label: "Browse Events",         steps: ["Click 'Browse Events' in the top navigation.", "Use the search bar or category filters to find what you need."] },
@@ -21,7 +21,7 @@ const PLATFORM_PAGES: Record<string, { url: string; label: string; steps: string
   agenda:               { url: "/dashboard",           label: "Agenda Generator",       steps: ["Go to your Organizer Dashboard.", "Click 'Generate Agenda'.", "Enter your workshop topics and duration."] },
 };
 
-// ─── Fetch all events from DB via internal API ─────────────────────────────
+// --- Fetch all events from DB via internal API ---
 async function fetchEvents(): Promise<any[]> {
   try {
     const res = await fetch(`${APP_URL}/api/events`, {
@@ -35,7 +35,7 @@ async function fetchEvents(): Promise<any[]> {
   }
 }
 
-// ─── Tool implementations ───────────────────────────────────────────────────
+// --- Tool implementations ---
 function searchEvents(events: any[], params: {
   category?: string; location?: string; keyword?: string;
   free_only?: boolean; solo_friendly?: boolean;
@@ -103,7 +103,7 @@ function evaluateIdea(abstract: string, eventTheme = "", teamSkills = "") {
   return { clarity, innovation, feasibility, impact, themeAlignment, overall, viability, wordCount };
 }
 
-// ─── Build system prompt with live events injected ─────────────────────────
+// --- Build system prompt with live events injected ---
 function buildSystemPrompt(events: any[]) {
   const eventsSummary = events.length > 0
     ? events.map(e => `- [ID:${e.id}] ${e.title} | ${e.categoryLabel || e.category} | ${e.date} | ${e.location} | ${e.priceAmount || e.price} | Organizer: ${e.organizer} | ${e.daysLeft != null ? e.daysLeft + "d left" : ""} | ${e.registrationsCount || 0} registered | URL: /events/${e.id}`).join("\n")
@@ -111,33 +111,33 @@ function buildSystemPrompt(events: any[]) {
 
   return `You are **ConnectAI**, the official AI assistant for **ConnectMyEvent** — a platform that helps participants discover hackathons, workshops, seminars, and placement campaigns, and helps organizers host and manage events.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 🎯 YOUR CORE MISSIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 1. **Platform Navigator** — Help users navigate the platform with direct links.
 2. **Event Discovery** — Search, recommend, and describe REAL events from the live database below.
 3. **Team & Idea Support** — Help find teammates, evaluate hackathon ideas.
 4. **Organizer Support** — Help organizers create events, generate agendas, analyze feedback.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 🗂️ LIVE EVENTS DATABASE (${events.length} events — use THIS data, never make up events)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 ${eventsSummary}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 👥 USER ROLES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 - **Participant**: Browse/discover events, register, find teammates, evaluate hackathon ideas, get AI recommendations.
 - **Organizer**: Create/publish events, manage registrations, use AI Copilot, generate workshop agendas, analyze feedback.
 
 STRICT PERSONA SEPARATION: If [User Role: Organizer] → act as Organizer Assistant (focus on event creation, copilot, agendas, feedback analytics). If [User Role: Participant] → act as Participant Assistant (focus on discovery, registration, team matching, idea evaluation). Never mix the two.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 🌐 KEY PLATFORM PAGES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 - Browse Events: /events
 - Dashboard: /dashboard
@@ -145,9 +145,9 @@ STRICT PERSONA SEPARATION: If [User Role: Organizer] → act as Organizer Assist
 - Sign Up: /register
 - Create Event (Organizer): /dashboard/create-event
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 📋 FORMATTING RULES (CRITICAL — FOLLOW EXACTLY)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 1. Use HTML, NOT markdown. The chat UI renders HTML directly.
    - Use <strong>bold</strong>, <br> for line breaks, <ul><li>lists</li></ul>
@@ -159,9 +159,9 @@ STRICT PERSONA SEPARATION: If [User Role: Organizer] → act as Organizer Assist
 6. Reply in the user's language. Fully fluent in English, Hindi, Telugu, Tamil, Kannada, Bengali, Marathi.
 7. Keep responses concise. Don't over-explain. Use bullet lists for multiple items.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 🧭 BEHAVIORAL RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 - ONLY reference events from the LIVE EVENTS DATABASE above. Never invent events.
 - When a user names an event (e.g., "Hack with Vijayawada"), find it in the database by title match and give FULL details with a direct link.
@@ -172,7 +172,7 @@ STRICT PERSONA SEPARATION: If [User Role: Organizer] → act as Organizer Assist
 - If no events match a query, say so honestly and suggest browsing /events.`;
 }
 
-// ─── Tool router — decides which tool to run based on AI's JSON instruction ──
+// --- Tool router — decides which tool to run based on AI's JSON instruction ---
 async function runTool(toolName: string, args: any, events: any[]): Promise<string> {
   switch (toolName) {
     case "search_events": {
@@ -193,7 +193,7 @@ async function runTool(toolName: string, args: any, events: any[]): Promise<stri
       // Score by keyword match
       const keywords = (interests + " " + skills).toLowerCase().split(/[,\s]+/).filter(Boolean);
       const scored = pool.map(e => {
-        const text = \`\${e.title} \${e.description} \${e.category} \${e.categoryLabel}\`.toLowerCase();
+        const text = `${e.title} ${e.description} ${e.category} ${e.categoryLabel}`.toLowerCase();
         const score = keywords.filter(k => text.includes(k)).length;
         return { ...e, _score: score };
       });
@@ -242,7 +242,7 @@ async function runTool(toolName: string, args: any, events: any[]): Promise<stri
         found: true,
         event: formatEventForAI(event),
         steps: [
-          \`Go to the event page: /events/\${event.id}\`,
+          `Go to the event page: /events/${event.id}`,
           "Click the 'Register Now' button on the right sidebar.",
           "Confirm your registration details.",
           "You'll receive a confirmation email.",
@@ -256,15 +256,15 @@ async function runTool(toolName: string, args: any, events: any[]): Promise<stri
         found: true,
         target_language: args.target_language,
         content: formatEventForAI(event),
-        instruction: \`Translate the above event content into \${args.target_language} and present it clearly.\`,
+        instruction: `Translate the above event content into ${args.target_language} and present it clearly.`,
       });
     }
     default:
-      return JSON.stringify({ error: \`Unknown tool: \${toolName}\` });
+      return JSON.stringify({ error: `Unknown tool: ${toolName}` });
   }
 }
 
-// ─── OpenRouter tool schemas ────────────────────────────────────────────────
+// --- OpenRouter tool schemas ---
 const TOOLS = [
   { type: "function", function: { name: "search_events", description: "Search events by category, location, keyword, free_only", parameters: { type: "object", properties: { category: { type: "string" }, location: { type: "string" }, keyword: { type: "string" }, free_only: { type: "boolean" }, solo_friendly: { type: "boolean" } } } } },
   { type: "function", function: { name: "get_event_details", description: "Get full details of a specific event by ID or title", parameters: { type: "object", properties: { event_id: { type: "string" }, title: { type: "string" } } } } },
@@ -280,7 +280,7 @@ const TOOLS = [
   { type: "function", function: { name: "translate_event_content", description: "Translate event content to a target language", parameters: { type: "object", required: ["event_id", "target_language"], properties: { event_id: { type: "string" }, target_language: { type: "string" } } } } },
 ];
 
-// ─── Main chat handler ───────────────────────────────────────────────────────
+// --- Main chat handler ---
 async function handleChat(query: string, userRole: string, sessionId: string) {
   if (!query.trim()) return NextResponse.json({ reply: "Please enter a message." });
   if (!OPENROUTER_API_KEY) return NextResponse.json({ reply: "AI service not configured. Please contact support." });
@@ -292,7 +292,7 @@ async function handleChat(query: string, userRole: string, sessionId: string) {
   if (!sessions.has(sessionId)) sessions.set(sessionId, []);
   const history = sessions.get(sessionId)!;
 
-  const userMessage = \`[User Role: \${userRole.charAt(0).toUpperCase() + userRole.slice(1)}]\n\${query}\`;
+  const userMessage = `[User Role: ${userRole.charAt(0).toUpperCase() + userRole.slice(1)}]\n${query}`;
   history.push({ role: "user", content: userMessage });
   if (history.length > 20) history.splice(0, history.length - 20);
 
@@ -310,7 +310,7 @@ async function handleChat(query: string, userRole: string, sessionId: string) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: \`Bearer \${OPENROUTER_API_KEY}\`,
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           "HTTP-Referer": APP_URL,
           "X-Title": "ConnectMyEvent",
         },
@@ -327,7 +327,7 @@ async function handleChat(query: string, userRole: string, sessionId: string) {
       if (!res.ok) {
         const err = await res.text();
         console.error("OpenRouter error:", res.status, err);
-        throw new Error(\`OpenRouter \${res.status}\`);
+        throw new Error(`OpenRouter ${res.status}`);
       }
 
       const data = await res.json();
@@ -363,12 +363,12 @@ async function handleChat(query: string, userRole: string, sessionId: string) {
   } catch (error) {
     console.error("Chatbot error:", error);
     return NextResponse.json({
-      reply: \`I'm having trouble right now. You can <a href="/events" style="color:#6366f1;font-weight:bold;">browse events directly →</a>\`,
+      reply: `I'm having trouble right now. You can <a href="/events" style="color:#6366f1;font-weight:bold;">browse events directly →</a>`,
     });
   }
 }
 
-// ─── Route handlers ──────────────────────────────────────────────────────────
+// --- Route handlers ---
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   return handleChat(
