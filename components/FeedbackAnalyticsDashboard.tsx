@@ -95,7 +95,7 @@ export default function FeedbackAnalyticsDashboard({ eventId, eventTitle }: Prop
     setSubmitLoading(true);
     setResult(null);
     try {
-      const res = await fetch("http://localhost:8000/ai/feedback-analysis", {
+      const res = await fetch("/api/ai/feedback-analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

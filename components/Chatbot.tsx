@@ -27,6 +27,21 @@ const ORGANIZER_SUGGESTIONS = [
   { label: "Navigate to dashboard", text: "Take me to my organizer dashboard" },
 ];
 
+const SESSION_STORAGE_KEY = "connectai-session";
+
+function ensureSessionId(current: string): string {
+  if (current) return current;
+  const existing = sessionStorage.getItem(SESSION_STORAGE_KEY);
+  if (existing) return existing;
+  const created = crypto.randomUUID();
+  sessionStorage.setItem(SESSION_STORAGE_KEY, created);
+  return created;
+}
+
+function botReply(text: string): Message {
+  return { id: `${Date.now()}-bot`, text, sender: "bot", isHtml: true };
+}
+
 export default function Chatbot() {
   const [role, setRole] = useState("participant");
 
@@ -62,6 +77,7 @@ export default function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const sessionRef = useRef("");
 
   useEffect(() => {
     if (bodyRef.current) {
@@ -71,8 +87,10 @@ export default function Chatbot() {
 
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend || input).trim();
-    if (!text) return;
+    if (!text || isTyping) return;
 
+    const sessionId = ensureSessionId(sessionRef.current);
+    sessionRef.current = sessionId;
     if (!textToSend) setInput("");
     setShowSuggestions(false);
 
@@ -84,38 +102,28 @@ export default function Chatbot() {
       const res = await fetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, user_role: role }),
+        body: JSON.stringify({ message: text, user_role: role, session_id: sessionId }),
       });
       const data = await res.json();
-
       setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          text: data.reply || "Sorry, I didn't get a response.",
-          sender: "bot",
-          isHtml: true,
-        },
-      ]);
+      setMessages((prev) => [...prev, botReply(data.reply || "Sorry, I didn't get a response.")]);
     } catch {
       setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          text: "I ran into a connection issue. Please try again or <a href='/events' style='color:#6366f1; font-weight:bold;'>browse events manually →</a>",
-          sender: "bot",
-          isHtml: true,
-        },
-      ]);
+      const fallback = "I ran into a connection issue. Please try again or <a href='/events' style='color:#6366f1; font-weight:bold;'>browse events manually →</a>";
+      setMessages((prev) => [...prev, botReply(fallback)]);
     }
   };
 
   const handleReset = async () => {
+    const current = ensureSessionId(sessionRef.current);
     try {
-      await fetch("http://localhost:8000/chat/reset", { method: "POST" });
-    } catch {}
+      await fetch(`/api/chatbot?session=${encodeURIComponent(current)}`, { method: "DELETE" });
+    } catch {
+      /* The next session id still starts a fresh transcript. */
+    }
+    const created = crypto.randomUUID();
+    sessionStorage.setItem(SESSION_STORAGE_KEY, created);
+    sessionRef.current = created;
     setMessages([
       {
         id: "reset",

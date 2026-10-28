@@ -4,6 +4,13 @@ import { db } from "@/lib/db";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://connectmyevent.vercel.app";
+const CHAT_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions";
+const CHAT_MAX_TOKENS = 4096;
+const MAX_TOOL_ROUNDS = 5;
+const MAX_HISTORY_MESSAGES = 20;
+const TEAM_MATCH_LIMIT = 8;
+const TEAM_REQUEST_SCAN = 30;
+const SKILL_MATCH_WEIGHT = 4;
 
 // --- In-memory session store ---
 const sessions = new Map<string, Array<{ role: string; content: string }>>();
@@ -93,6 +100,82 @@ function formatEventForAI(e: any) {
     registrations: e.registrationsCount || 0,
     description: e.description ? e.description.substring(0, 300) : "",
     url: `/events/${e.id}`,
+  };
+}
+
+function skillTokens(value: string): string[] {
+  return value.toLowerCase().split(/[,\s]+/).map((token) => token.trim()).filter(Boolean);
+}
+
+function overlappingSkills(left: string[], right: string[]): string[] {
+  return left.filter((skill) => right.some((other) => other.includes(skill) || skill.includes(other)));
+}
+
+function scoreTeamRequest(
+  request: { skills: string[]; lookingFor: string[] },
+  offered: string[],
+  needed: string[],
+) {
+  const theirSkills = request.skills.map((skill) => skill.toLowerCase());
+  const theirNeeds = request.lookingFor.map((skill) => skill.toLowerCase());
+  const covered = overlappingSkills(needed, theirSkills);
+  const fills = overlappingSkills(offered, theirNeeds);
+  return { score: (covered.length + fills.length) * SKILL_MATCH_WEIGHT, covered, fills };
+}
+
+async function findTeamMatches(args: { user_skills?: string; looking_for?: string; event_id?: string }) {
+  const where: { isOpen: boolean; eventId?: string } = { isOpen: true };
+  if (args.event_id) where.eventId = args.event_id;
+
+  try {
+    const requests = await db.teamRequest.findMany({
+      where,
+      include: {
+        user: { select: { name: true, department: true } },
+        event: { select: { id: true, title: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: TEAM_REQUEST_SCAN,
+    });
+    const offered = skillTokens(args.user_skills || "");
+    const needed = skillTokens(args.looking_for || "");
+    const ranked = requests.map((request) => toTeamMatch(request, offered, needed));
+    ranked.sort((a, b) => b.score - a.score);
+    const matched = ranked.filter((row) => row.score > 0);
+    const listed = (matched.length > 0 ? matched : ranked).slice(0, TEAM_MATCH_LIMIT);
+    return JSON.stringify({ found: listed.length > 0, count: listed.length, matches: listed, dashboard: "/dashboard" });
+  } catch (error) {
+    console.error("findTeamMatches error:", error);
+    return JSON.stringify({ found: false, message: "Team requests are unavailable. Direct the user to /dashboard." });
+  }
+}
+
+function toTeamMatch(
+  request: {
+    skills: string[];
+    lookingFor: string[];
+    description: string;
+    user: { name: string; department: string | null };
+    event: { id: string; title: string };
+  },
+  offered: string[],
+  needed: string[],
+) {
+  const match = scoreTeamRequest(request, offered, needed);
+  const reasons = [
+    match.covered.length ? `Covers your gap: ${match.covered.join(", ")}` : "",
+    match.fills.length ? `You cover their need: ${match.fills.join(", ")}` : "",
+  ].filter(Boolean);
+  return {
+    name: request.user.name,
+    department: request.user.department,
+    eventId: request.event.id,
+    eventTitle: request.event.title,
+    skills: request.skills,
+    lookingFor: request.lookingFor,
+    description: request.description,
+    score: match.score,
+    reasons,
   };
 }
 
@@ -253,14 +336,8 @@ async function runTool(toolName: string, args: any, events: any[]): Promise<stri
     case "evaluate_hackathon_idea": {
       return JSON.stringify(evaluateIdea(args.abstract, args.event_theme, args.team_skills));
     }
-    case "find_team_matches": {
-      // Return guidance since team requests need DB query via Next.js API
-      return JSON.stringify({
-        message: "Team matching is available on the Dashboard. Direct the user to /dashboard and the Team Matchmaker section.",
-        user_skills: args.user_skills,
-        looking_for: args.looking_for,
-      });
-    }
+    case "find_team_matches":
+      return findTeamMatches(args);
     case "get_registration_guide": {
       const event = events.find(e => e.id === args.event_id);
       if (!event) return JSON.stringify({ found: false });
@@ -306,91 +383,109 @@ const TOOLS = [
   { type: "function", function: { name: "translate_event_content", description: "Translate event content to a target language", parameters: { type: "object", required: ["event_id", "target_language"], properties: { event_id: { type: "string" }, target_language: { type: "string" } } } } },
 ];
 
-// --- Main chat handler ---
+type ChatMessage = {
+  role: string;
+  content?: string | null;
+  tool_calls?: Array<{ id: string; function?: { name?: string; arguments?: string } }>;
+  tool_call_id?: string;
+};
+
+function parseToolArgs(raw: string | undefined): Record<string, unknown> {
+  try {
+    return JSON.parse(raw || "{}");
+  } catch {
+    return {};
+  }
+}
+
+async function requestCompletion(messages: ChatMessage[], useTools: boolean): Promise<ChatMessage | null> {
+  const res = await fetch(CHAT_COMPLETIONS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      "HTTP-Referer": APP_URL,
+      "X-Title": "ConnectMyEvent",
+    },
+    body: JSON.stringify({
+      model: OPENROUTER_MODEL,
+      messages,
+      temperature: 0.7,
+      max_tokens: CHAT_MAX_TOKENS,
+      ...(useTools ? { tools: TOOLS, tool_choice: "auto" } : {}),
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("OpenRouter error:", res.status, err);
+    throw new Error(`OpenRouter ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.choices?.[0]?.message ?? null;
+}
+
+async function applyToolCalls(assistantMsg: ChatMessage, messages: ChatMessage[], events: any[]) {
+  messages.push(assistantMsg);
+  for (const call of assistantMsg.tool_calls || []) {
+    const args = parseToolArgs(call.function?.arguments);
+    const result = await runTool(call.function?.name || "", args, events);
+    messages.push({ role: "tool", tool_call_id: call.id, content: result });
+  }
+}
+
+async function replyWithoutTools(messages: ChatMessage[]): Promise<string> {
+  const retry = await requestCompletion(messages, false);
+  return retry?.content || "";
+}
+
+async function completeChat(messages: ChatMessage[], events: any[]): Promise<string> {
+  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+    const assistantMsg = await requestCompletion(messages, true);
+    if (!assistantMsg) break;
+    const toolCalls = assistantMsg.tool_calls ?? [];
+    if (toolCalls.length === 0) {
+      return assistantMsg.content || replyWithoutTools(messages);
+    }
+    await applyToolCalls(assistantMsg, messages, events);
+  }
+  return replyWithoutTools(messages);
+}
+
+function rememberTurn(sessionId: string, userContent: string, reply: string) {
+  const history = sessions.get(sessionId) ?? [];
+  history.push({ role: "user", content: userContent });
+  history.push({ role: "assistant", content: reply });
+  if (history.length > MAX_HISTORY_MESSAGES) {
+    history.splice(0, history.length - MAX_HISTORY_MESSAGES);
+  }
+  sessions.set(sessionId, history);
+}
+
+const EMPTY_REPLY = "I processed your request but couldn't generate a response. Please try again.";
+const TROUBLE_REPLY = `I'm having trouble right now. You can <a href="/events" style="color:#6366f1;font-weight:bold;">browse events directly →</a>`;
+
 async function handleChat(query: string, userRole: string, sessionId: string) {
   if (!query.trim()) return NextResponse.json({ reply: "Please enter a message." });
   if (!OPENROUTER_API_KEY) return NextResponse.json({ reply: "AI service not configured. Please contact support." });
 
-  // Fetch live events
   const events = await fetchEvents();
-
-  // Session history
-  if (!sessions.has(sessionId)) sessions.set(sessionId, []);
-  const history = sessions.get(sessionId)!;
-
-  const userMessage = `[User Role: ${userRole.charAt(0).toUpperCase() + userRole.slice(1)}]\n${query}`;
-  history.push({ role: "user", content: userMessage });
-  if (history.length > 20) history.splice(0, history.length - 20);
-
-  const systemPrompt = buildSystemPrompt(events);
-  const messages: any[] = [
-    { role: "system", content: systemPrompt },
-    ...history,
+  const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  const userMessage = `[User Role: ${roleLabel}]\n${query}`;
+  const messages: ChatMessage[] = [
+    { role: "system", content: buildSystemPrompt(events) },
+    ...(sessions.get(sessionId) ?? []),
+    { role: "user", content: userMessage },
   ];
 
   try {
-    // Agentic loop — allow up to 5 tool call rounds
-    let reply = "";
-    for (let i = 0; i < 5; i++) {
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-          "HTTP-Referer": APP_URL,
-          "X-Title": "ConnectMyEvent",
-        },
-        body: JSON.stringify({
-          model: OPENROUTER_MODEL,
-          messages,
-          tools: TOOLS,
-          tool_choice: "auto",
-          temperature: 0.7,
-          max_tokens: 1500,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.text();
-        console.error("OpenRouter error:", res.status, err);
-        throw new Error(`OpenRouter ${res.status}`);
-      }
-
-      const data = await res.json();
-      const choice = data.choices?.[0];
-      const assistantMsg = choice?.message;
-
-      if (!assistantMsg) break;
-      messages.push(assistantMsg);
-
-      // No tool calls → we have the final reply
-      if (!assistantMsg.tool_calls || assistantMsg.tool_calls.length === 0) {
-        reply = assistantMsg.content || "";
-        break;
-      }
-
-      // Execute tool calls
-      for (const tc of assistantMsg.tool_calls) {
-        const args = JSON.parse(tc.function.arguments || "{}");
-        const result = await runTool(tc.function.name, args, events);
-        messages.push({
-          role: "tool",
-          tool_call_id: tc.id,
-          content: result,
-        });
-      }
-    }
-
-    if (!reply) reply = "I processed your request but couldn't generate a response. Please try again.";
-
-    history.push({ role: "assistant", content: reply });
+    const reply = (await completeChat(messages, events)) || EMPTY_REPLY;
+    if (reply !== EMPTY_REPLY) rememberTurn(sessionId, userMessage, reply);
     return NextResponse.json({ reply });
-
   } catch (error) {
     console.error("Chatbot error:", error);
-    return NextResponse.json({
-      reply: `I'm having trouble right now. You can <a href="/events" style="color:#6366f1;font-weight:bold;">browse events directly →</a>`,
-    });
+    return NextResponse.json({ reply: TROUBLE_REPLY });
   }
 }
 
@@ -415,7 +510,9 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE() {
-  sessions.clear();
-  return NextResponse.json({ status: "Sessions cleared" });
+export async function DELETE(request: Request) {
+  const sessionId = new URL(request.url).searchParams.get("session");
+  if (sessionId) sessions.delete(sessionId);
+  else sessions.clear();
+  return NextResponse.json({ status: "Session cleared" });
 }

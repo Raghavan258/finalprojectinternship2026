@@ -32,10 +32,13 @@ for stream in (sys.stdout, sys.stderr):
 import uvicorn
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "8000"))
+    # Hosts set PORT. Local runs keep reload on.
+    reload = "PORT" not in os.environ
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,          # Auto-restart on code changes (dev only)
-        reload_dirs=["."],    # Watch only the service directory
+        port=port,
+        reload=reload,
+        reload_dirs=["."] if reload else None,
     )
