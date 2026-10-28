@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ConnectMyEvent
 
-## Getting Started
+Event platform for students and organizers. Participants find hackathons, workshops, and placement drives, register, and ask an assistant that searches the live database. Organizers publish events and use AI to draft listings, agendas, and feedback summaries.
 
-First, run the development server:
+Live app: [finalprojectinternship2026-37f5.vercel.app](https://finalprojectinternship2026-37f5.vercel.app)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stack
+
+Next.js 16, React 19, TypeScript, MongoDB (Prisma), FastAPI, OpenRouter (`google/gemini-2.5-flash`).
+
+## What it does
+
+- Browse, filter, and register for events. Accounts are participant or organizer, each with its own dashboard.
+- **Ask AI** sits on every page. It calls the model from Next.js with function calling, runs the chosen tool against MongoDB (search, recommendations, team match, idea score, navigation), and replies with links into the app.
+- **Organizer AI:** listing copilot, workshop agenda, feedback analysis.
+- **Participant AI:** recommendations, teammate matching, idea scoring.
+
+## Architecture
+
+```
+Browser
+  Ask AI  -->  /api/chatbot  -->  Prisma + OpenRouter tool loop (up to 5 rounds)
+  Dashboards --> /api/ai/*   -->  FastAPI (python-ai-service) --> OpenRouter
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ask AI does not depend on the Python process, so the hosted site can answer from Vercel. Dashboard panels call `PYTHON_AI_URL`. The browser never talks to the Python port directly.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+app/api/chatbot/          Ask AI tool loop
+app/api/ai/               dashboard AI proxies
+app/dashboard/            participant and organizer
+components/               chatbot, copilot, agenda, feedback, teams
+prisma/schema.prisma      User, Event, Registration, TeamRequest, Notification, EventFeedback
+python-ai-service/        FastAPI chat tools plus copilot, agenda, feedback, notifications
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Run locally
 
-## Learn More
+`.env.local` needs `DATABASE_URL`, `OPENROUTER_API_KEY`, and `OPENROUTER_MODEL`. `PYTHON_AI_URL` defaults to `http://localhost:8000`.
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Dashboard AI also needs `python-ai-service`: copy the same OpenRouter key into `python-ai-service/.env`, then `pip install -r requirements.txt` and `python run.py`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Do not commit env files.
